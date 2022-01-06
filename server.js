@@ -1,5 +1,6 @@
 const express = require('express');
 
+// Use port that Heroku wants to use. Otherwise use port 3001
 const PORT = process.env.PORT || 3001;
 
 const { animals } = require('./data/animals');
@@ -45,7 +46,12 @@ function filterByQuery(query, animalsArray) {
     }
     console.log(filteredResults);
     return filteredResults;
-  }
+}
+
+function findById(id, animalsArray) {
+    const result = animalsArray.filter(animal => animal.id === id)[0];
+    return result;
+}
 
 /* get() requires two arguments:
 - String that instructs where the needed data is. (below, go to http://localhost:3001/api/animals to see results)
@@ -65,6 +71,18 @@ app.get('/api/animals', (req, res) => {
     //res.send('Hello!');
     // json() is for sending JSON files
     res.json(results);
+});
+
+// Alternative path to get response from server by entering an animal's ID number
+app.get('/api/animals/:id', (req, res) => {
+    const result = findById(req.params.id, animals);
+
+    // Give 404 error if user sends invalid data
+    if (result) {
+      res.json(result);
+    } else {
+      res.send(404);
+    }
 });
 
 // Tell express which port to listen to
