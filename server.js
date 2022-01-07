@@ -3,6 +3,7 @@ const express = require('express');
 // Use port that Heroku wants to use. Otherwise use port 3001
 const PORT = process.env.PORT || 3001;
 
+// Destructure the json file so that only the "animals" array is extracted for use
 const { animals } = require('./data/animals');
 
 // Filesystem module
@@ -20,6 +21,9 @@ const app = express();
 app.use(express.urlencoded({ extended: true })); //"{extended: true}" tells that there may be arrays nested in the data
 // parse incoming JSON data
 app.use(express.json());
+
+// Needed to ensure that static files (i.e: stylesheets) are loaded from the correct folder
+app.use(express.static('public'));
 
 // Use query given from client to search the appropriate animal / data item to return
 function filterByQuery(query, animalsArray) {
@@ -65,15 +69,19 @@ function findById(id, animalsArray) {
     return result;
 }
 
-function createNewAnimal(body, animalsArray) {
+// Param 1 is for POST request. 
+// Param 2 is the exiting array that lists all the animals
+function createNewAnimal(body, animalsArray) { 
     console.log(body);
-    // our function's main code will go here!
 
     const animal = body;
     animalsArray.push(animal);
 
+    // Writes the new animal to the JSON file
     fs.writeFileSync(
+        // _dirname represents the dire of the file we execute the code in
         path.join(__dirname, './data/animals.json'),
+        //
         JSON.stringify({ animals: animalsArray }, null, 2)
     );
   
@@ -139,7 +147,7 @@ app.post('/api/animals', (req, res) => {
     // data received is processed by middleware (see further up code) before it's processed as req.body
     console.log(req.body);
 
-    // set id based on what the next index of the array will be
+    // set a unique ID number on new animal based on what the next index of the array will be
     req.body.id = animals.length.toString();
 
     // if any data in req.body is incorrect, send 400 error back
@@ -149,6 +157,27 @@ app.post('/api/animals', (req, res) => {
         const animal = createNewAnimal(req.body, animals);
         res.json(animal);
     }
+});
+
+// When user goes to the homepage, serve up (contents of) index.html
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, './public/index.html'));
+});
+
+// When user goes to the url ./animals, serve up (contents of) animals.html
+app.get('/animals', (req, res) => {
+    res.sendFile(path.join(__dirname, './public/animals.html'));
+});
+
+// Likewise for ./zookeepers
+app.get('/zookeepers', (req, res) => {
+    res.sendFile(path.join(__dirname, './public/zookeepers.html'));
+});
+
+// Any other unspecified / wildcard route will be served contents of index.html
+// Wildcard routes must be placed after other routes. Otherwise this one will take precedence over them.
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, './public/index.html'));
 });
 
 // Tell express which port to listen to

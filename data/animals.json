@@ -117,6 +117,24 @@
         "hungry"
       ],
       "id": "11"
+    },
+    {
+      "name": "Coconut",
+      "species": "goose",
+      "diet": "herbivore",
+      "personalityTraits": [
+        "weird"
+      ],
+      "id": "12"
+    },
+    {
+      "name": "Zawa",
+      "species": "Goose",
+      "diet": "herbivore",
+      "personalityTraits": [
+        "zany"
+      ],
+      "id": "13"
     }
   ]
 }
